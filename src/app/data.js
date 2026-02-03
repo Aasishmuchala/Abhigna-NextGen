@@ -5,34 +5,38 @@ export const projects = [
     category: "Ongoing",
     location: "Panathur, Bangalore",
     description: "Experience the unbuilt. A fully immersive digital twin.",
-    image: "/images/aadhya-serene.jpg", // Placeholder until you replace it
+    // High-end architectural visualization (Moody/Dark)
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop", 
     link: "https://aadhyaserene.com/"
   },
   {
     id: 2,
     title: "Misty Woods",
     category: "Ongoing",
-    location: "Green Domain Layout, Bangalore",
+    location: "Green Domain Layout",
     description: "Nature integrated architecture. Breathe free.",
-    image: "/images/misty-woods.jpg",
+    // Lush green/concrete brutalism
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
     link: "#"
   },
   {
     id: 3,
     title: "Windsor Gardens",
     category: "Completed",
-    location: "Panathur, Bangalore",
+    location: "Panathur",
     description: "Luxury living in the heart of the IT corridor.",
-    image: "/images/windsor.jpg",
+    // Clean modern facade
+    image: "https://images.unsplash.com/photo-1600596542815-e3287303f2df?q=80&w=1600&auto=format&fit=crop",
     link: "#"
   },
   {
     id: 4,
     title: "Central Park",
     category: "Completed",
-    location: "Panathur, Bangalore",
+    location: "Panathur",
     description: "Urban sanctuary with premium amenities.",
-    image: "/images/central-park.jpg",
+    // Night shot / Interior
+    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1600&auto=format&fit=crop",
     link: "#"
   }
 ];
