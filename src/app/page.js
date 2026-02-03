@@ -1,19 +1,95 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Lenis from '@studio-freight/lenis';
-import { motion } from 'framer-motion';
-import HeroScene from './components/canvas/HeroScene';
-import './globals.css';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Image as DreiImage, useScroll, ScrollControls, Scroll, Text } from '@react-three/drei';
+import { projects } from './data';
+import * as THREE from 'three';
+
+// --- 3D COMPONENTS ---
+
+function ProjectItem({ index, position, scale, url, title, location }) {
+  const ref = useRef();
+  const [hovered, setHover] = useState(false);
+  
+  useFrame((state, delta) => {
+    // Subtle float
+    ref.current.material.zoom = THREE.MathUtils.lerp(ref.current.material.zoom, hovered ? 1.2 : 1, delta * 2);
+    ref.current.material.grayscale = THREE.MathUtils.lerp(ref.current.material.grayscale, hovered ? 0 : 0.8, delta * 2);
+  });
+
+  return (
+    <group position={position}>
+      <DreiImage 
+        ref={ref}
+        url={url} 
+        scale={scale} 
+        onPointerOver={() => setHover(true)} 
+        onPointerOut={() => setHover(false)}
+        transparent
+      />
+      {/* 3D Text Overlay */}
+      <Text 
+        position={[-scale[0]/2, -scale[1]/2 - 0.5, 0]} 
+        anchorX="left" 
+        fontSize={0.3} 
+        color={hovered ? "#d4af37" : "white"}
+        font="/fonts/Cinzel-Regular.ttf" // You need to add this font to public/fonts/
+      >
+        {title.toUpperCase()}
+      </Text>
+      <Text 
+        position={[-scale[0]/2, -scale[1]/2 - 0.8, 0]} 
+        anchorX="left" 
+        fontSize={0.15} 
+        color="#888"
+      >
+        {location}
+      </Text>
+    </group>
+  );
+}
+
+function Scene() {
+  const { width, height } = useThree((state) => state.viewport);
+  const data = projects;
+  
+  return (
+    <ScrollControls pages={data.length + 1} damping={0.1}>
+      <Scroll>
+        {/* HERO */}
+        {/* We keep the hero empty in 3D, handled by DOM for crisp text */}
+      </Scroll>
+      
+      <Scroll>
+        {/* PROJECT GALLERY */}
+        {data.map((project, i) => (
+          <ProjectItem 
+            key={project.id}
+            index={i}
+            // Layout logic: Zig-zag pattern down the page
+            position={[
+              (i % 2 === 0 ? -1 : 1) * (width * 0.25), 
+              -height * (i + 1) + 2, 
+              0
+            ]}
+            scale={[4, 5, 1]}
+            url={project.image} // Ensure these images exist in /public/images/
+            title={project.title}
+            location={project.location}
+          />
+        ))}
+      </Scroll>
+    </ScrollControls>
+  );
+}
+
+// --- MAIN PAGE ---
 
 export default function Home() {
   
   useEffect(() => {
-    const lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smooth: true,
-    });
-
+    const lenis = new Lenis({ duration: 1.5, smooth: true });
     function raf(time) {
         lenis.raf(time);
         requestAnimationFrame(raf);
@@ -22,66 +98,39 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative w-full min-h-screen bg-black text-white overflow-hidden">
+    <main className="w-full h-screen bg-[#050505] text-white overflow-hidden">
       
-      {/* 3D BACKGROUND */}
-      <HeroScene />
+      {/* 3D CANVAS LAYER */}
+      <div className="fixed inset-0 z-0">
+        <Canvas gl={{ antialias: true }} camera={{ position: [0, 0, 5], fov: 50 }}>
+            <Scene />
+        </Canvas>
+      </div>
 
-      {/* HERO CONTENT */}
-      <section className="h-screen w-full flex flex-col justify-center items-center relative z-10 pointer-events-none">
-        <motion.div 
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center"
-        >
-            <h1 className="text-[10vw] font-serif leading-[0.85] tracking-tighter mix-blend-difference">
+      {/* DOM UI LAYER (Overlays) */}
+      <div className="absolute top-0 left-0 w-full z-10 pointer-events-none mix-blend-difference">
+        {/* NAV */}
+        <nav className="flex justify-between p-10">
+            <div className="text-xl font-bold tracking-[0.2em] pointer-events-auto cursor-pointer">ABHIGNA</div>
+            <div className="text-sm pointer-events-auto cursor-pointer hover:text-gold-500">MENU +</div>
+        </nav>
+
+        {/* HERO TEXT */}
+        <section className="h-screen flex flex-col justify-center items-center">
+            <h1 className="text-[12vw] leading-none font-serif tracking-tighter">
                 ABHIGNA
             </h1>
-            <p className="mt-8 text-sm uppercase tracking-[0.5em] text-gold-500">
-                The Architecture of Silence
-            </p>
-        </motion.div>
-      </section>
-
-      {/* SCROLL CONTENT */}
-      <section className="min-h-screen w-full bg-black/80 backdrop-blur-md relative z-20 py-32 px-10">
-        <div className="max-w-4xl mx-auto">
-            <motion.h2 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                className="text-4xl font-light leading-snug text-gray-300"
-            >
-                We do not build structures. We sculpt <span className="text-white italic">moments</span>. 
-                Using advanced <strong>Sthyra™</strong> visualization technology, we bridge the gap between imagination and reality.
-            </motion.h2>
-
-            <div className="mt-32 grid grid-cols-1 md:grid-cols-2 gap-20">
-                <div className="project-card group cursor-pointer">
-                    <div className="aspect-[3/4] bg-neutral-900 overflow-hidden relative">
-                        <img 
-                            src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2600" 
-                            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500"></div>
-                    </div>
-                    <h3 className="mt-6 text-2xl font-serif">Aadhya Serene</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mt-2">Under Construction</p>
-                </div>
-
-                <div className="project-card group cursor-pointer mt-20">
-                    <div className="aspect-[3/4] bg-neutral-900 overflow-hidden relative">
-                        <img 
-                            src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2600" 
-                            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-                        />
-                    </div>
-                    <h3 className="mt-6 text-2xl font-serif">Misty Woods</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mt-2">Completed</p>
-                </div>
+            <div className="flex justify-between w-[40vw] mt-4 text-xs tracking-[0.3em] uppercase opacity-70">
+                <span>Bangalore</span>
+                <span>Est. 2007</span>
             </div>
+        </section>
+
+        {/* FOOTER HINT */}
+        <div className="fixed bottom-10 right-10 text-xs opacity-50">
+            SCROLL TO EXPLORE
         </div>
-      </section>
+      </div>
 
     </main>
   );
